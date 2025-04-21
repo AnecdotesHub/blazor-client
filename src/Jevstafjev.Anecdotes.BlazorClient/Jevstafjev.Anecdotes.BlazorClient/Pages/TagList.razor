@@ -1,0 +1,27 @@
+﻿@page "/tags"
+@inject IHttpClientFactory ClientFactory
+
+<PageTitle>Tags</PageTitle>
+
+<h3>Tags</h3>
+@if (tags is not null)
+{
+    @foreach (var tag in tags)
+    {
+        <small class="mx-1">
+            <a href="/tag/@tag.Name">@(tag.Name)(@tag.AnecdotesCount)</a>
+        </small>
+    }
+}
+
+@code {
+    private List<Tag>? tags;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var httpClient = ClientFactory.CreateClient(AppData.AnecdoteClientName);
+
+        var result = await httpClient.GetFromJsonAsync<Result<List<Tag>>>("/api/tags/get-list");
+        tags = result?.Value;
+    }
+}
