@@ -1,0 +1,9 @@
+﻿﻿<small class="mx-1">
+    <a href="/tag/@Tag.Name">@Tag.Name</a>
+</small>
+
+@code {
+    [Parameter]
+    [EditorRequired]
+    public Tag Tag { get; set; } = null!;
+}

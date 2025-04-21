@@ -1,0 +1,30 @@
+﻿﻿<div class="card">
+    <div class="card-body">
+        <h3 class="card-title">@Anecdote.Title</h3>
+        @if (Anecdote.Content.Length >= 300)
+        {
+            <p class="card-text pre">
+                @Anecdote.Content.Substring(0, 300)<a href="/show/@Anecdote.Id">...</a>
+            </p>
+        }
+        else
+        {
+            <p class="card-text pre">@Anecdote.Content</p>
+        }
+        <p class="card-text">
+            <a href="/show/@Anecdote.Id">Open</a>
+        </p>
+        <p class="card-text">
+            @foreach (var tag in Anecdote.Tags)
+            {
+                <TagDisplay Tag="tag" />
+            }
+        </p>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    [EditorRequired]
+    public Anecdote Anecdote { get; set; } = null!;
+}
