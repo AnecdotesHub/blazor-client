@@ -1,11 +1,53 @@
 ﻿@page "/"
+@inject IHttpClientFactory ClientFactory
+@inject NavigationManager NavigationManager
 
 <PageTitle>Home</PageTitle>
 
-<h1>Hello, world!</h1>
+<div class="row">
+    <div class="col-lg-6">
+        <h1>Random</h1>
 
-<div class="alert alert-warning" role="alert">
-    Before authentication will function correctly, you must configure your provider details in <code>Program.cs</code>
+        @if (randomAnecdotes != null)
+        {
+            @foreach (var anecdote in randomAnecdotes)
+            {
+                <div class="p-3">
+                    <AnecdotePreview Anecdote="anecdote" />
+                </div>
+            }
+        }
+    </div>
+
+    <div class="col-lg-6">
+        <h1>Newest</h1>
+
+        @if (newestAnecdotes != null)
+        {
+            @foreach (var anecdote in newestAnecdotes)
+            {
+                <div class="p-3">
+                    <AnecdotePreview Anecdote="anecdote" />
+                </div>
+            }
+        }
+    </div>
 </div>
 
-Welcome to your new app.
+@code {
+    private List<Anecdote>? randomAnecdotes;
+    private List<Anecdote>? newestAnecdotes;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var httpClient = ClientFactory.CreateClient(AppData.AnecdoteClientName);
+
+        const int RandomAnecdotesCount = 5;
+        var randomResult = await httpClient.GetFromJsonAsync<Result<List<Anecdote>>>($"/api/anecdotes/random-list?total={RandomAnecdotesCount}");
+        randomAnecdotes = randomResult?.Value;
+
+        const int NewestAnecdotesCount = 5;
+        var newestResult = await httpClient.GetFromJsonAsync<Result<List<Anecdote>>>($"/api/anecdotes/newest?total={NewestAnecdotesCount}");
+        newestAnecdotes = newestResult?.Value;
+    }
+}
