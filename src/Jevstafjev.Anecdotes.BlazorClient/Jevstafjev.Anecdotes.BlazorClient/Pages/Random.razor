@@ -1,0 +1,26 @@
+﻿@page "/random"
+@inject IJSRuntime JsRuntime
+@inject IHttpClientFactory ClientFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Random</PageTitle>
+
+<p>Redirect...</p>
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        var httpClient = ClientFactory.CreateClient(AppData.AnecdoteClientName);
+
+        var result = await httpClient.GetFromJsonAsync<Result<Anecdote>>("/api/anecdotes/random");
+
+        var anecdote = result?.Value;
+        if (anecdote is null)
+        {
+            await JsRuntime.InvokeVoidAsync("alert", "Something went wrong");
+            return;
+        }
+
+        NavigationManager.NavigateTo($"/show/{anecdote.Id}");
+    }
+}
