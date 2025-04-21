@@ -17,6 +17,9 @@ builder.Services.AddHttpClient(AppData.AnecdoteAuthClientName, client =>
     .ConfigureHandler(
         authorizedUrls: [builder.Configuration["ServiceUrls:AnecdoteApi"]!]));
 
+builder.Services.AddHttpClient(AppData.SubscriberClientName,
+    client => client.BaseAddress = new Uri(builder.Configuration["ServiceUrls:SubscriberApi"]!));
+
 builder.Services.AddOidcAuthentication(options =>
 {
     options.ProviderOptions.Authority = builder.Configuration["OpenIDConnectSettings:Authority"];

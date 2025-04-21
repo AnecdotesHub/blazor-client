@@ -1,0 +1,77 @@
+﻿@page "/subscribe"
+@inject IHttpClientFactory ClientFactory
+@inject IJSRuntime JsRuntime
+
+<PageTitle>Subscribe</PageTitle>
+
+<h3>Subscribe</h3>
+
+<div class="col-lg-6">
+    <p>Subscribe to our email newsletter to receive notifications about new anecdotes.</p>
+    <EditForm Model="model" OnSubmit="SubmitAsync">
+        @if (validationErrors.Any())
+        {
+            <ul class="text-danger">
+                @foreach (var errorMessage in validationErrors)
+                {
+                    <li>@errorMessage</li>
+                }
+            </ul>
+        }
+        <div class="form-group">
+            <label for="title">Title</label>
+            <InputText id="title" class="form-control" @bind-Value="model.Email" />
+        </div>
+        <button type="submit" class="btn btn-primary mt-2">Submit</button>
+    </EditForm>
+</div>
+
+
+@code {
+    private Input model = new();
+    private List<string> validationErrors = new();
+
+    private async Task SubmitAsync()
+    {
+        var httpClient = ClientFactory.CreateClient(AppData.SubscriberClientName);
+
+        var response = await httpClient.PostAsJsonAsync<Input>("/api/subscribers/create", model);
+        if (!response.IsSuccessStatusCode)
+        {
+            await JsRuntime.InvokeVoidAsync("alert", $"Something went wrong({response.StatusCode})");
+            return;
+        }
+
+        var result = await response.Content.ReadFromJsonAsync<Result<Anecdote>>();
+        if (result is null)
+        {
+            await JsRuntime.InvokeVoidAsync("alert", "Something went wrong");
+            return;
+        }
+
+        if (!result.IsSuccess)
+        {
+            if (!result.ValidationErrors.Any())
+            {
+                await JsRuntime.InvokeVoidAsync("alert", "Something went wrong");
+                return;
+            }
+
+            validationErrors.Clear();
+            foreach (var error in result.ValidationErrors)
+            {
+                validationErrors.Add(error.ErrorMessage);
+            }
+
+            return;
+        }
+
+        validationErrors.Clear();
+        await JsRuntime.InvokeVoidAsync("alert", "Subscription successfully completed");
+    }
+
+    public class Input
+    {
+        public string Email { get; set; } = null!;
+    }
+}

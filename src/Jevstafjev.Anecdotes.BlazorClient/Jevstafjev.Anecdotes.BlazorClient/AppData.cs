@@ -6,6 +6,8 @@
 
         public const string AnecdoteClientName = "AnecdoteApi";
 
+        public const string SubscriberClientName = "SubscriberApi";
+
         public const string AnecdoteAuthClientName = "AnecdoteApi.AuthenticationClient";
     }
 }
