@@ -1,0 +1,33 @@
+﻿@page "/tag/{Tag}"
+@inject IHttpClientFactory ClientFactory
+
+<PageTitle>Tag - @Tag</PageTitle>
+
+<h3>By tag: @Tag</h3>
+
+<div class="row">
+    @if (anecdotes != null)
+    {
+        @foreach (var anecdote in anecdotes)
+        {
+            <div class="p-3 col-lg-6">
+                <AnecdotePreview Anecdote="anecdote" />
+            </div>
+        }
+    }
+</div>
+
+@code {
+    [Parameter]
+    public string Tag { get; set; } = null!;
+
+    private List<Anecdote>? anecdotes;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        var httpClient = ClientFactory.CreateClient("AnecdotesApi");
+        
+        var result = await httpClient.GetFromJsonAsync<PagedResult<List<Anecdote>>>($"/api/anecdotes/find-by-tag/{Tag}");
+        anecdotes = result?.Value;
+    }
+}
