@@ -1,0 +1,24 @@
+﻿@page "/show/{id:guid}"
+@inject IHttpClientFactory ClientFactory
+
+<PageTitle>@anecdote?.Title</PageTitle>
+
+@if (anecdote != null)
+{
+    <AnecdoteDisplay Anecdote="anecdote" />
+}
+
+@code {
+    [Parameter]
+    public Guid Id { get; set; }
+
+    private Anecdote? anecdote;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        var httpClient = ClientFactory.CreateClient("AnecdotesApi");
+
+        var result = await httpClient.GetFromJsonAsync<Result<Anecdote>>($"/api/anecdotes/{Id}");
+        anecdote = result?.Value;
+    }
+}
