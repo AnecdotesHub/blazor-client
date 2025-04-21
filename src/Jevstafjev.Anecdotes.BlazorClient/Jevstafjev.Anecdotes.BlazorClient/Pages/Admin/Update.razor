@@ -1,0 +1,110 @@
+﻿@page "/admin/anecdotes/update/{id:guid}"
+@attribute [Authorize(Roles = AppData.AdministratorRoleName)]
+@inject IHttpClientFactory ClientFactory
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JsRuntime
+
+<PageTitle>Update anecdote</PageTitle>
+
+<h3>Update anecdote</h3>
+
+@if (model is not null)
+{
+    <div class="col-lg-6">
+        <EditForm Model="model" OnSubmit="SubmitAsync">
+            @if (validationErrors.Any())
+            {
+                <ul class="text-danger">
+                    @foreach (var errorMessage in validationErrors)
+                    {
+                        <li>@errorMessage</li>
+                    }
+                </ul>
+            }
+            <div class="form-group">
+                <label for="title">Title</label>
+                <InputText id="title" class="form-control" @bind-Value="model.Title" />
+            </div>
+            <div class="form-group">
+                <label for="content">Content</label>
+                <InputTextArea id="content" class="form-control" rows="5" @bind-Value="model.Content" />
+            </div>
+            <div class="form-group">
+                <label for="tags">Tags</label>
+                <InputText id="tags" class="form-control" @bind-Value="model.Tags" />
+            </div>
+            <button type="submit" class="btn btn-primary mt-2">Submit</button>
+        </EditForm>
+    </div>
+}
+else
+{
+    <p>Loading...</p>
+}
+
+
+@code {
+    [Parameter]
+    public Guid Id { get; set; }
+
+    private Input? model;
+    private List<string> validationErrors = new();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        var httpClient = ClientFactory.CreateClient(AppData.AnecdoteAuthClientName);
+
+        var result = await httpClient.GetFromJsonAsync<Result<Input>>($"/api/anecdotes/get-for-update/{Id}");
+        if (result is null || !result.IsSuccess)
+        {
+            await JsRuntime.InvokeVoidAsync("alert", "Something went wrong");
+            return;
+        }
+
+        model = result.Value;
+    }
+
+    private async Task SubmitAsync()
+    {
+        var httpClient = ClientFactory.CreateClient(AppData.AnecdoteAuthClientName);
+
+        var response = await httpClient.PutAsJsonAsync<Input>("/api/anecdotes/update", model!);
+
+        var result = await response.Content.ReadFromJsonAsync<Result<Anecdote>>();
+        if (result is null)
+        {
+            await JsRuntime.InvokeVoidAsync("alert", "Something went wrong");
+            return;
+        }
+
+        if (!result.IsSuccess)
+        {
+            if (!result.ValidationErrors.Any())
+            {
+                await JsRuntime.InvokeVoidAsync("alert", "Something went wrong");
+                return;
+            }
+
+            validationErrors.Clear();
+            foreach (var error in result.ValidationErrors)
+            {
+                validationErrors.Add(error.ErrorMessage);
+            }
+
+            return;
+        }
+
+        NavigationManager.NavigateTo("/admin/anecdotes");
+    }
+
+    public class Input
+    {
+        public Guid Id { get; set; }
+
+        public string Title { get; set; } = null!;
+
+        public string Content { get; set; } = null!;
+
+        public string Tags { get; set; } = null!;
+    }
+}
