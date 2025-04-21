@@ -1,0 +1,18 @@
+﻿﻿<div class="card">
+    <div class="card-body">
+        <h3 class="card-title">@Anecdote.Title</h3>
+        <p class="card-text pre">@Anecdote.Content</p>
+        <p class="card-text">
+            @foreach (var tag in Anecdote.Tags)
+            {
+                <TagDisplay Tag="tag" />
+            }
+        </p>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    [EditorRequired]
+    public Anecdote Anecdote { get; set; } = null!;
+}
