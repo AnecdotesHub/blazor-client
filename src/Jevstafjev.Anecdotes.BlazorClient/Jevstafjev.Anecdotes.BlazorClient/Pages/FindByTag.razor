@@ -25,7 +25,7 @@
 
     protected override async Task OnParametersSetAsync()
     {
-        var httpClient = ClientFactory.CreateClient("AnecdotesApi");
+        var httpClient = ClientFactory.CreateClient(AppData.AnecdoteClientName);
         
         var result = await httpClient.GetFromJsonAsync<PagedResult<List<Anecdote>>>($"/api/anecdotes/find-by-tag/{Tag}");
         anecdotes = result?.Value;
