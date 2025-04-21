@@ -15,7 +15,7 @@ builder.Services.AddHttpClient(AppData.AnecdoteAuthClientName, client =>
     client.BaseAddress = new Uri(builder.Configuration["ServiceUrls:AnecdoteApi"]!);
 }).AddHttpMessageHandler(sp => sp.GetRequiredService<AuthorizationMessageHandler>()
     .ConfigureHandler(
-        authorizedUrls: [builder.Configuration["OpenIDConnectSettings:Authority"]!]));
+        authorizedUrls: [builder.Configuration["ServiceUrls:AnecdoteApi"]!]));
 
 builder.Services.AddOidcAuthentication(options =>
 {
