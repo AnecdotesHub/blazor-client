@@ -1,0 +1,68 @@
+﻿﻿<nav>
+    <ul class="pagination">
+        @if (PageNumber > 1)
+        {
+            <li class="page-item">
+                <span role="button" class="page-link" aria-label="Previous" @onclick="() => OnPageChanged?.Invoke(PageNumber - 1)">
+                    &laquo;
+                </span>
+            </li>
+        }
+        else
+        {
+            <li class="page-item disabled">
+                <span role="button" class="page-link" aria-label="Previous">
+                    &laquo;
+                </span>
+            </li>
+        }
+
+        @for (int i = 1; i <= TotalPages; i++)
+        {
+            int pageNumber = i;
+            @if (pageNumber != PageNumber)
+            {
+                <li class="page-item">
+                    <span role="button" class="page-link" @onclick="() => OnPageChanged?.Invoke(pageNumber)">@i</span>
+                </li>
+            }
+            else
+            {
+                <li class="page-item active">
+                    <span role="button" class="page-link">@i</span>
+                </li>
+            }
+        }
+
+        @if (PageNumber < TotalPages)
+        {
+            <li class="page-item">
+                <span role="button" class="page-link" aria-label="Next" @onclick="() => OnPageChanged?.Invoke(PageNumber + 1)">
+                    &raquo;
+                </span>
+            </li>
+        }
+        else
+        {
+            <li class="page-item disabled">
+                <span role="button" class="page-link" aria-label="Next">
+                    &raquo;
+                </span>
+            </li>
+        }
+    </ul>
+</nav>
+
+@code {
+    [Parameter]
+    [EditorRequired]
+    public long PageNumber { get; set; } = 1;
+
+    [Parameter]
+    [EditorRequired]
+    public long TotalPages { get; set; }
+
+    [Parameter]
+    [EditorRequired]
+    public Action<long>? OnPageChanged { get; set; }
+}

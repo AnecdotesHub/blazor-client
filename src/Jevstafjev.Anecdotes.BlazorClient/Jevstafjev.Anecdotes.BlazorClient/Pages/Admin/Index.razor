@@ -1,0 +1,73 @@
+﻿@page "/admin/anecdotes"
+@attribute [Authorize(Roles = AppData.AdministratorRoleName)]
+@inject IHttpClientFactory ClientFactory
+@inject NavigationManager NavigationManager
+@inject IAccessTokenProvider accessTokenProvider
+
+<PageTitle>Anecdotes</PageTitle>
+
+<h3>Anecdotes</h3>
+<a href="/admin/anecdotes/create">Create</a>
+
+@if (anecdotes != null)
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Title</th>
+                <th>Created At</th>
+                <th>Created By</th>
+                <th>Updated At</th>
+                <th>Updated By</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var anecdote in anecdotes)
+            {
+                <tr>
+                    <td>@anecdote.Id</td>
+                    <td>@anecdote.Title</td>
+                    <td>@anecdote.CreatedAt</td>
+                    <td>@anecdote.CreatedBy</td>
+                    <td>@anecdote.UpdatedAt</td>
+                    <td>@anecdote.UpdatedBy</td>
+                    <td>
+                        <a href="/admin/anecdotes/delete/@anecdote.Id">Delete</a>
+                        <a href="/admin/anecdotes/update/@anecdote.Id">Update</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <Paginator PageNumber="Page!.Value"
+               TotalPages="totalPages"
+               OnPageChanged="@((long page) => NavigationManager.NavigateTo($"/admin/anecdotes?page={page}"))" />
+}
+
+@code {
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public long? Page { get; set; }
+
+    private long totalPages;
+    private List<Anecdote>? anecdotes;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        var httpClient = ClientFactory.CreateClient(AppData.AnecdoteAuthClientName);
+
+        Page ??= 1;
+
+        var pageIndex = Page - 1;
+        var result = await httpClient.GetFromJsonAsync<PagedResult<List<Anecdote>>>($"/api/anecdotes/paged/{pageIndex}");
+        if (result is null)
+        {
+            return;
+        }
+
+        totalPages = result.PagedInfo.TotalPages;
+        anecdotes = result.Value;
+    }
+}
