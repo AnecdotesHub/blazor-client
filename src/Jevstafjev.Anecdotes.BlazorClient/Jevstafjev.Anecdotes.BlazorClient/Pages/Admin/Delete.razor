@@ -1,0 +1,52 @@
+﻿@page "/admin/anecdotes/delete/{id:guid}"
+@attribute [Authorize(Roles = AppData.AdministratorRoleName)]
+@inject IHttpClientFactory ClientFactory
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JsRuntime
+
+<PageTitle>Delete anecdote</PageTitle>
+
+<h3>Delete anecdote</h3>
+
+@if (anecdote is not null)
+{
+    <p>Are you sure you want to delete this anecdote?</p>
+
+    <ul class="list-group list-group-flush">
+        <li class="list-group-item">Id: @anecdote.Id</li>
+        <li class="list-group-item">Title: @anecdote.Title</li>
+        <li class="list-group-item">Created by: @anecdote.CreatedBy</li>
+        <li class="list-group-item">Created at: @anecdote.CreatedAt</li>
+    </ul>
+
+    <button class="btn btn-danger mt-2" @onclick="DeleteAsync">Delete</button>
+}
+
+@code {
+    [Parameter]
+    public Guid Id { get; set; }
+
+    private Anecdote? anecdote;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        var httpClient = ClientFactory.CreateClient(AppData.AnecdoteAuthClientName);
+        
+        var result = await httpClient.GetFromJsonAsync<Result<Anecdote>>($"/api/anecdotes/{Id}");
+        anecdote = result?.Value;
+    }
+
+    private async Task DeleteAsync()
+    {
+        var httpClient = ClientFactory.CreateClient(AppData.AnecdoteAuthClientName);
+
+        var result = await httpClient.DeleteFromJsonAsync<Result<Anecdote>>($"/api/anecdotes/delete/{Id}");
+        if (result is null || !result.IsSuccess)
+        {
+            await JsRuntime.InvokeVoidAsync("alert", "Something went wrong");
+            return;
+        }
+
+        NavigationManager.NavigateTo("/admin/anecdotes");
+    }
+}
