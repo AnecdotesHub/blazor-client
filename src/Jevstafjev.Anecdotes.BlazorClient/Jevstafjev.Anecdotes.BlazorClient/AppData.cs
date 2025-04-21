@@ -2,8 +2,8 @@
 {
     public class AppData
     {
-        public const string AnecdoteClientName = "AnecdotesApi";
+        public const string AnecdoteClientName = "AnecdoteApi";
 
-        public const string AnecdoteAuthClientName = "AnecdotesApi.AuthenticationClient";
+        public const string AnecdoteAuthClientName = "AnecdoteApi.AuthenticationClient";
     }
 }
