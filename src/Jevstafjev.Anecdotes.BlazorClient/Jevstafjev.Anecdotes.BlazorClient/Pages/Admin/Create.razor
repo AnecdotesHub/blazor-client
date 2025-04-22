@@ -8,31 +8,36 @@
 
 <h3>Create anecdote</h3>
 
-<div class="col-lg-6">
-    <EditForm Model="model" OnSubmit="SubmitAsync">
-        @if (validationErrors.Any())
-        {
-            <ul class="text-danger">
-                @foreach (var errorMessage in validationErrors)
-                {
-                    <li>@errorMessage</li>
-                }
-            </ul>
-        }
-        <div class="form-group">
-            <label for="title">Title</label>
-            <InputText id="title" class="form-control" @bind-Value="model.Title" />
-        </div>
-        <div class="form-group">
-            <label for="content">Content</label>
-            <InputTextArea id="content" class="form-control" rows="5" @bind-Value="model.Content" />
-        </div>
-        <div class="form-group">
-            <label for="tags">Tags</label>
-            <InputText id="tags" class="form-control" @bind-Value="model.Tags" />
-        </div>
-        <button type="submit" class="btn btn-primary mt-2">Submit</button>
-    </EditForm>
+<div class="row">
+    <div class="col-lg-6">
+        <EditForm Model="model" OnSubmit="SubmitAsync">
+            @if (validationErrors.Any())
+            {
+                <ul class="text-danger">
+                    @foreach (var errorMessage in validationErrors)
+                    {
+                        <li>@errorMessage</li>
+                    }
+                </ul>
+            }
+            <div class="form-group">
+                <label for="title">Title</label>
+                <InputText id="title" class="form-control" @bind-Value="model.Title" />
+            </div>
+            <div class="form-group">
+                <label for="content">Content</label>
+                <InputTextArea id="content" class="form-control" rows="5" @bind-Value="model.Content" />
+            </div>
+            <div class="form-group">
+                <label for="tags">Tags</label>
+                <InputText id="tags" class="form-control" @bind-Value="model.Tags" />
+            </div>
+            <button type="submit" class="btn btn-primary mt-2">Submit</button>
+        </EditForm>
+    </div>
+    <div class="col-lg-6">
+        <button class="btn btn-primary w-100" @onclick="GenerateAsync">Generate</button>
+    </div>
 </div>
 
 @code {
@@ -77,6 +82,27 @@
         NavigationManager.NavigateTo("/admin/anecdotes");
     }
 
+    private async Task GenerateAsync()
+    {
+        var httpClient = ClientFactory.CreateClient(AppData.GeneratorAuthClientName);
+
+        var response = await httpClient.GetAsync("/api/anecdotes/generate");
+        if (!response.IsSuccessStatusCode)
+        {
+            await JsRuntime.InvokeVoidAsync("alert", $"Something went wrong({response.StatusCode})");
+            return;
+        }
+
+        var result = await response.Content.ReadFromJsonAsync<Result<Input>>();
+        if (result is null)
+        {
+            await JsRuntime.InvokeVoidAsync("alert", "Something went wrong");
+            return;
+        }
+
+        model = result.Value;
+    }
+    
     public class Input
     {
         public string Title { get; set; } = null!;

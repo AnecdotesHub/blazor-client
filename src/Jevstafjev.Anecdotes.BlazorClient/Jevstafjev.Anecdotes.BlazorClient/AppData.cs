@@ -9,5 +9,7 @@
         public const string SubscriberClientName = "SubscriberApi";
 
         public const string AnecdoteAuthClientName = "AnecdoteApi.AuthenticationClient";
+
+        public const string GeneratorAuthClientName = "AnecdoteGenerator.AuthenticationClient";
     }
 }
